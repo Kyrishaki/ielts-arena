@@ -73,12 +73,18 @@ export function Sidebar() {
   ];
 
   return (
-    <aside className="hidden lg:flex flex-col w-60 fixed top-14 left-0 bottom-0 z-40 bg-[#0B0F17] border-r border-[rgba(255,255,255,0.08)] select-none">
-      {/* Navigation List (Scrollable if needed, firmly locked) */}
+    <aside className="hidden lg:flex flex-col w-60 fixed top-14 left-0 bottom-0 z-40 border-r select-none transition-colors duration-200"
+      style={{
+        backgroundColor: "var(--canvas)",
+        borderColor: "var(--border-subtle)",
+      }}
+    >
+      {/* Navigation List */}
       <div className="flex-1 overflow-y-auto py-4 px-3 space-y-5">
         {navigation.map((section, idx) => (
-          <div key={idx} className="space-y-1.5">
-            <p className="px-2 text-[10px] font-semibold text-[#64748B] tracking-wider uppercase mb-1">
+          <div key={idx} className="space-y-1">
+            <p className="px-2 text-[10px] font-semibold tracking-wider uppercase mb-1.5"
+               style={{ color: "var(--text-faint)" }}>
               {section.group}
             </p>
             {section.items.map((item) => {
@@ -95,30 +101,51 @@ export function Sidebar() {
                   className={cn(
                     "flex items-center justify-between px-2.5 h-8 max-h-8 rounded text-[13px] font-medium transition-colors group",
                     isActive
-                      ? "bg-[#1C2636] text-white border border-[rgba(255,255,255,0.08)]"
-                      : "text-[#94A3B8] hover:text-white hover:bg-[rgba(255,255,255,0.04)]"
+                      ? "sidebar-item-active"
+                      : "sidebar-item-idle"
                   )}
                 >
                   <div className="flex items-center gap-2.5 truncate min-w-0">
                     <Icon
                       className={cn(
-                        "w-4 h-4 shrink-0",
-                        isActive ? "text-[#6366F1]" : "text-[#64748B]"
+                        "w-4 h-4 shrink-0 transition-colors",
+                        isActive ? "sidebar-icon-active" : "sidebar-icon-idle"
                       )}
+                      style={
+                        isActive
+                          ? { color: "var(--brand-indigo)" }
+                          : { color: "var(--text-muted)" }
+                      }
                     />
-                    <span className="truncate">{item.name}</span>
+                    <span className="truncate" style={{
+                      color: isActive ? "var(--text-primary)" : "var(--text-muted)"
+                    }}>
+                      {item.name}
+                    </span>
                   </div>
 
                   {item.badge && (
                     <span
-                      className={cn(
-                        "px-1.5 py-0.5 rounded text-[10px] font-mono shrink-0 ml-1",
+                      className="px-1.5 py-0.5 rounded text-[10px] font-mono shrink-0 ml-1 border"
+                      style={
                         item.badge === "Chính"
-                          ? "bg-[#1E1B4B] text-[#A5B4FC] border border-[#4338CA]"
+                          ? {
+                              background: "rgba(129,140,248,0.12)",
+                              color: "var(--brand-indigo)",
+                              borderColor: "rgba(129,140,248,0.25)",
+                            }
                           : item.badge === "SRS"
-                          ? "bg-[#064E3B] text-[#A7F3D0] border border-[#047857]"
-                          : "bg-[#1C2636] text-[#94A3B8] border border-[rgba(255,255,255,0.08)]"
-                      )}
+                          ? {
+                              background: "rgba(52,211,153,0.1)",
+                              color: "var(--brand-green)",
+                              borderColor: "rgba(52,211,153,0.25)",
+                            }
+                          : {
+                              background: "var(--surface-2)",
+                              color: "var(--text-muted)",
+                              borderColor: "var(--border-subtle)",
+                            }
+                      }
                     >
                       {item.badge}
                     </span>
@@ -131,17 +158,28 @@ export function Sidebar() {
       </div>
 
       {/* Footer / Mini User Profile Card */}
-      <div className="p-3 border-t border-[rgba(255,255,255,0.08)] bg-[#131B26]">
+      <div className="p-3 border-t" style={{ borderColor: "var(--border-subtle)", backgroundColor: "var(--surface-1)" }}>
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-full bg-[#1C2636] border border-[rgba(255,255,255,0.1)] flex items-center justify-center text-xs font-semibold text-[#F8FAFC]">
+          <div className="w-8 h-8 rounded-full border flex items-center justify-center text-xs font-semibold"
+            style={{
+              backgroundColor: "var(--surface-2)",
+              borderColor: "var(--border-subtle)",
+              color: "var(--text-muted)",
+            }}>
             --
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
-              <span className="text-[13px] font-medium text-white truncate">Người dùng</span>
-              <span className="text-[11px] font-mono text-[#6366F1] font-semibold">-- ELO</span>
+              <span className="text-[13px] font-medium truncate" style={{ color: "var(--text-primary)" }}>
+                Người dùng
+              </span>
+              <span className="text-[11px] font-mono font-semibold" style={{ color: "var(--brand-indigo)" }}>
+                -- ELO
+              </span>
             </div>
-            <p className="text-[11px] text-[#64748B] truncate">Mục tiêu: Band --</p>
+            <p className="text-[11px] truncate" style={{ color: "var(--text-muted)" }}>
+              Mục tiêu: Band --
+            </p>
           </div>
         </div>
       </div>
