@@ -11,6 +11,7 @@ import {
   Bell,
   Command,
 } from "lucide-react";
+import { BrandLogo } from "@/components/ui/BrandLogo";
 
 export function TopNavbar() {
   const pathname = usePathname();
@@ -28,10 +29,8 @@ export function TopNavbar() {
     <header className="h-14 fixed top-0 left-0 right-0 z-50 bg-[#0B0F17]/95 backdrop-blur-md border-b border-[rgba(255,255,255,0.08)] px-3 sm:px-5 flex items-center justify-between select-none">
       {/* Left: Brand & Breadcrumb */}
       <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-        <Link href="/" className="flex items-center gap-2 font-bold tracking-tight text-white shrink-0">
-          <div className="w-7 h-7 rounded bg-[#6366F1] flex items-center justify-center text-xs font-mono font-black text-white shadow-none">
-            IA
-          </div>
+        <Link href="/" className="flex items-center gap-2 font-bold tracking-tight text-white shrink-0 group">
+          <BrandLogo size={30} className="w-7 h-7 shrink-0 transition-transform group-hover:scale-105" />
           <span className="text-sm font-semibold tracking-normal hidden md:inline">
             IELTS ARENA
           </span>
