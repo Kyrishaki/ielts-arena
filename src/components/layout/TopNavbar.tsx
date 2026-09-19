@@ -13,9 +13,17 @@ import {
 } from "lucide-react";
 import { BrandLogo } from "@/components/ui/BrandLogo";
 import { ThemeSwitcher } from "@/components/ui/ThemeSwitcher";
+import { useUser } from "@/context/UserContext";
 
 export function TopNavbar() {
   const pathname = usePathname();
+  const { user, profile } = useUser();
+
+  const displayName = profile?.display_name || user?.user_metadata?.display_name || user?.email?.split("@")[0] || "";
+  const initials = displayName ? displayName.slice(0, 2).toUpperCase() : "?";
+  const elo = profile?.elo ?? null;
+  const streak = profile?.streak ?? null;
+  const bandTarget = profile?.band_target ?? null;
 
   const getBreadcrumb = () => {
     if (pathname === "/") return "Dịch Thuật Học Thuật (Academic Translation)";
@@ -62,45 +70,52 @@ export function TopNavbar() {
 
       {/* Right: Theme Switcher + Gamification Badges */}
       <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
-        {/* Theme Switcher — always visible */}
+        {/* Theme Switcher */}
         <ThemeSwitcher />
 
-        {/* Streak Counter */}
-        <div
-          className="flex items-center gap-1.5 px-2 py-1 rounded bg-[var(--surface-2)] border border-[var(--border-subtle)] text-xs font-mono text-[#F59E0B]"
-          title="Chuỗi ngày học liên tục"
-        >
-          <Flame className="w-3.5 h-3.5 text-[#F59E0B] fill-current" />
-          <span className="font-semibold hidden sm:inline">--</span>
-        </div>
+        {user && (
+          <>
+            {/* Streak */}
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-[var(--surface-2)] border border-[var(--border-subtle)] text-xs font-mono text-[#F59E0B]" title="Chuỗi ngày học">
+              <Flame className="w-3.5 h-3.5 text-[#F59E0B] fill-current" />
+              <span className="font-semibold hidden sm:inline">{streak ?? "–"}</span>
+            </div>
 
-        {/* ELO Rating Badge */}
-        <div
-          className="flex items-center gap-1.5 px-2 py-1 rounded bg-[var(--surface-2)] border border-[var(--border-subtle)] text-xs font-mono text-[var(--brand-indigo)]"
-          title="Điểm Elo Đấu Trường"
-        >
-          <Zap className="w-3.5 h-3.5" />
-          <span className="font-bold hidden sm:inline">ELO</span>
-        </div>
+            {/* ELO */}
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-[var(--surface-2)] border border-[var(--border-subtle)] text-xs font-mono" style={{ color: "var(--brand-indigo)" }} title="Điểm Elo">
+              <Zap className="w-3.5 h-3.5" style={{ color: "var(--brand-indigo)" }} />
+              <span className="font-bold hidden sm:inline">{elo ?? "–"}</span>
+            </div>
 
-        {/* Target Band */}
-        <div
-          className="hidden lg:flex items-center gap-1.5 px-2 py-1 rounded bg-[var(--surface-2)] border border-[var(--border-subtle)] text-xs text-[var(--text-primary)]"
-          title="Band mục tiêu"
-        >
-          <Target className="w-3.5 h-3.5 text-[#22C55E]" />
-          <span>Band --</span>
-        </div>
+            {/* Band Target */}
+            {bandTarget && (
+              <div className="hidden lg:flex items-center gap-1.5 px-2 py-1 rounded bg-[var(--surface-2)] border border-[var(--border-subtle)] text-xs" style={{ color: "var(--text-primary)" }} title="Band mục tiêu">
+                <Target className="w-3.5 h-3.5 text-[#22C55E]" />
+                <span>Band {bandTarget}</span>
+              </div>
+            )}
+          </>
+        )}
 
         {/* Notification Bell */}
-        <button className="p-1.5 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-2)] transition-colors">
+        <button className="p-1.5 rounded transition-colors" style={{ color: "var(--text-muted)" }}>
           <Bell className="w-4 h-4" />
         </button>
 
-        {/* Mini User Profile Avatar */}
-        <div className="w-7 h-7 rounded-full bg-[var(--surface-2)] border border-[var(--border-subtle)] flex items-center justify-center text-xs font-bold text-[var(--text-primary)] ml-1">
-          <Target className="w-3.5 h-3.5 text-[var(--text-muted)]" />
-        </div>
+        {/* Avatar / Login */}
+        {user ? (
+          <div className="w-7 h-7 rounded-full border flex items-center justify-center text-xs font-bold ml-1"
+            style={{ backgroundColor: "rgba(129,140,248,0.15)", borderColor: "rgba(129,140,248,0.3)", color: "var(--brand-indigo)" }}
+            title={displayName}>
+            {initials}
+          </div>
+        ) : (
+          <Link href="/login"
+            className="px-3 py-1 rounded text-xs font-semibold ml-1 transition-colors"
+            style={{ background: "var(--brand-gradient)", color: "white" }}>
+            Đăng nhập
+          </Link>
+        )}
       </div>
     </header>
   );
