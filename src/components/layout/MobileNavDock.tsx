@@ -3,17 +3,17 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Swords, Brain, Trophy, User } from "lucide-react";
+import { Languages, Headphones, Layers, Swords } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function MobileNavDock() {
   const pathname = usePathname();
 
   const tabs = [
-    { name: "Đấu trường", href: "/", icon: Swords },
-    { name: "Luyện AI", href: "/ai/writing-upgrader", icon: Brain },
-    { name: "Xếp hạng", href: "/leaderboard", icon: Trophy },
-    { name: "Hồ sơ", href: "/profile", icon: User },
+    { name: "Dịch thuật", href: "/", icon: Languages },
+    { name: "Shadowing", href: "/shadowing", icon: Headphones },
+    { name: "Cards SRS", href: "/cards", icon: Layers },
+    { name: "Đấu trường", href: "/arena", icon: Swords },
   ];
 
   return (

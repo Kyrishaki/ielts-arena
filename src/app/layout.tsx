@@ -1,9 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { AppShell } from "@/components/layout/AppShell";
 
 export const metadata: Metadata = {
-  title: "IELTS Arena — Nền Tảng Học & Đấu Trường IELTS AI",
-  description: "Đấu trường Co-op PvP 1v1 với 5 minigames học thuật và AI chấm điểm chuyên sâu theo 4 tiêu chí IELTS.",
+  title: "IELTS Arena — Nền Tảng Học Thuật & Đấu Trường IELTS AI",
+  description: "Trung tâm dịch thuật học thuật, Shadowing Lab, Paraphrase Studio, Flashcard SRS và Đấu trường PvP 1v1.",
 };
 
 export const viewport: Viewport = {
@@ -21,8 +22,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi" className="dark">
-      <body className="antialiased min-h-screen flex flex-col bg-[#0B0F17] text-[#F8FAFC]">
-        {children}
+      <body className="antialiased min-h-screen bg-[#0B0F17] text-[#F8FAFC]">
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );
