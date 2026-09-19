@@ -134,14 +134,14 @@ export function Sidebar() {
       <div className="p-3 border-t border-[rgba(255,255,255,0.08)] bg-[#131B26]">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-full bg-[#1C2636] border border-[rgba(255,255,255,0.1)] flex items-center justify-center text-xs font-semibold text-[#F8FAFC]">
-            MT
+            --
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
-              <span className="text-[13px] font-medium text-white truncate">Minh Triết</span>
-              <span className="text-[11px] font-mono text-[#6366F1] font-semibold">1,480 ELO</span>
+              <span className="text-[13px] font-medium text-white truncate">Người dùng</span>
+              <span className="text-[11px] font-mono text-[#6366F1] font-semibold">-- ELO</span>
             </div>
-            <p className="text-[11px] text-[#64748B] truncate">Mục tiêu: Band 8.0</p>
+            <p className="text-[11px] text-[#64748B] truncate">Mục tiêu: Band --</p>
           </div>
         </div>
       </div>

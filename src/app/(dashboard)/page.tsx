@@ -363,7 +363,7 @@ export default function AcademicTranslationPage() {
               </p>
             </div>
             <div className="pt-3 mt-3 border-t border-[rgba(255,255,255,0.06)] flex items-center justify-between text-[11px] text-[#22C55E]">
-              <span>14 phòng đang thách đấu</span>
+              <span>Tham gia đấu trường</span>
               <span>Vào Đấu trường →</span>
             </div>
           </div>

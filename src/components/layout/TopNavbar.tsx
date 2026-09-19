@@ -67,7 +67,7 @@ export function TopNavbar() {
           title="Chuỗi ngày học liên tục"
         >
           <Flame className="w-3.5 h-3.5 text-[#F59E0B] fill-current" />
-          <span className="font-semibold">5d</span>
+          <span className="font-semibold">--</span>
         </div>
 
         {/* ELO Rating Badge */}
@@ -76,7 +76,7 @@ export function TopNavbar() {
           title="Điểm Elo Đấu Trường"
         >
           <Zap className="w-3.5 h-3.5 text-[#6366F1]" />
-          <span className="font-bold">1,480</span>
+          <span className="font-bold">ELO</span>
         </div>
 
         {/* Target Band */}
@@ -85,18 +85,17 @@ export function TopNavbar() {
           title="Band mục tiêu"
         >
           <Target className="w-3.5 h-3.5 text-[#22C55E]" />
-          <span>Band 8.0</span>
+          <span>Band --</span>
         </div>
 
         {/* Notification Bell */}
         <button className="p-1.5 rounded text-[#94A3B8] hover:text-white hover:bg-[#1C2636] transition-colors relative">
           <Bell className="w-4 h-4" />
-          <span className="w-1.5 h-1.5 rounded-full bg-[#6366F1] absolute top-1 right-1" />
         </button>
 
         {/* Mini User Profile Avatar */}
         <div className="w-7 h-7 rounded-full bg-[#1C2636] border border-[rgba(255,255,255,0.12)] flex items-center justify-center text-xs font-bold text-white ml-1">
-          MT
+          <Target className="w-3.5 h-3.5 text-[#94A3B8]" />
         </div>
       </div>
     </header>
