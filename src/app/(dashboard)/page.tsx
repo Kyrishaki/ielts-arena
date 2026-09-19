@@ -23,39 +23,56 @@ interface TranslationTier {
   keyCollocations: string[];
 }
 
-const SAMPLE_TRANSLATIONS: Record<string, TranslationTier[]> = {
-  default: [
-    {
-      band: "Band 6.5 (Tự nhiên)",
-      text: "Many people believe that technological developments bring great advantages to modern society, but they also cause several environmental issues.",
-      analysis: ["Cấu trúc câu ghép liên kết bằng 'but'", "Từ vựng chuẩn mực: 'technological developments', 'environmental issues'"],
-      keyCollocations: ["technological developments", "bring advantages", "environmental issues"],
-    },
-    {
-      band: "Band 7.5 (Học thuật Chuyên sâu)",
-      text: "It is widely recognized that technological advancements yield substantial benefits for contemporary society, notwithstanding their detrimental environmental consequences.",
-      analysis: ["Mệnh đề bị động khách quan 'It is widely recognized that'", "Liên từ học thuật 'notwithstanding'"],
-      keyCollocations: ["technological advancements", "yield substantial benefits", "contemporary society", "detrimental consequences"],
-    },
-    {
-      band: "Band 8.5+ (Tái tạo C1/C2 & Đảo ngữ)",
-      text: "Seldom has the exponential proliferation of technological innovation exerted such profound ramifications upon modern civilization, though not without precipitating grave ecological degradation.",
-      analysis: ["Cấu trúc đảo ngữ phủ định 'Seldom has...'", "Danh từ hóa phức hợp 'exponential proliferation', 'grave ecological degradation'"],
-      keyCollocations: ["exponential proliferation", "exert profound ramifications", "precipitate ecological degradation"],
-    },
-  ],
-};
+const INITIAL_TIERS: TranslationTier[] = [
+  {
+    band: "Band 6.5 (Tự nhiên)",
+    text: "Many people believe that technological developments bring great advantages to modern society, but they also cause several environmental issues.",
+    analysis: [
+      "Cấu trúc câu ghép liên kết bằng 'but'",
+      "Từ vựng chuẩn mực: 'technological developments', 'environmental issues'",
+    ],
+    keyCollocations: ["technological developments", "bring advantages", "environmental issues"],
+  },
+  {
+    band: "Band 7.5 (Học thuật Chuyên sâu)",
+    text: "It is widely recognized that technological advancements yield substantial benefits for contemporary society, notwithstanding their detrimental environmental consequences.",
+    analysis: [
+      "Mệnh đề bị động khách quan 'It is widely recognized that'",
+      "Liên từ học thuật 'notwithstanding'",
+    ],
+    keyCollocations: [
+      "technological advancements",
+      "yield substantial benefits",
+      "contemporary society",
+      "detrimental consequences",
+    ],
+  },
+  {
+    band: "Band 8.5+ (Tái tạo C1/C2 & Đảo ngữ)",
+    text: "Seldom has the exponential proliferation of technological innovation exerted such profound ramifications upon modern civilization, though not without precipitating grave ecological degradation.",
+    analysis: [
+      "Cấu trúc đảo ngữ phủ định 'Seldom has...'",
+      "Danh từ hóa phức hợp 'exponential proliferation', 'grave ecological degradation'",
+    ],
+    keyCollocations: [
+      "exponential proliferation",
+      "exert profound ramifications",
+      "precipitate ecological degradation",
+    ],
+  },
+];
 
 export default function AcademicTranslationPage() {
   const [inputText, setInputText] = useState(
     "Nhiều người tin rằng sự phát triển của công nghệ đem lại lợi ích to lớn cho xã hội hiện đại, nhưng nó cũng gây ra nhiều vấn đề môi trường."
   );
+  const [tiers, setTiers] = useState<TranslationTier[]>(INITIAL_TIERS);
   const [selectedBandIndex, setSelectedBandIndex] = useState(2); // Default to Band 8.5
   const [copied, setCopied] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const currentTiers = SAMPLE_TRANSLATIONS.default;
-  const activeTier = currentTiers[selectedBandIndex];
+  const activeTier = tiers[selectedBandIndex] || tiers[0];
 
   const handleCopy = () => {
     navigator.clipboard.writeText(activeTier.text);
@@ -63,12 +80,34 @@ export default function AcademicTranslationPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleTranslate = (e: React.FormEvent) => {
+  const handleTranslate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!inputText.trim()) return;
+
     setIsTranslating(true);
-    setTimeout(() => {
+    setErrorMessage(null);
+
+    try {
+      const res = await fetch("/api/ai/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: inputText }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Lỗi khi kết nối dịch thuật AI");
+      }
+
+      const data = await res.json();
+      if (data.tiers && Array.isArray(data.tiers) && data.tiers.length === 3) {
+        setTiers(data.tiers);
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Đã có lỗi xảy ra";
+      console.warn("Translation API notice:", msg);
+    } finally {
       setIsTranslating(false);
-    }, 300);
+    }
   };
 
   return (
@@ -81,13 +120,13 @@ export default function AcademicTranslationPage() {
             Dịch Thuật Học Thuật IELTS (Academic Translation Engine)
           </h1>
           <p className="text-xs text-[#94A3B8] mt-0.5">
-            Chuyển ngữ đa chiều Việt - Anh với 3 cấp độ Band Score (6.5, 7.5, 8.5+) và bóc tách collocations học thuật tức thời.
+            Chuyển ngữ đa chiều Việt - Anh với 3 cấp độ Band Score (6.5, 7.5, 8.5+) và bóc tách collocations học thuật tức thời qua Gemini AI.
           </p>
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-auto">
           <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-[#1E1B4B] text-[#A5B4FC] border border-[#4338CA]">
-            AI Model: Academic C1/C2
+            AI Model: Gemini 1.5 Academic
           </span>
         </div>
       </div>
@@ -102,6 +141,7 @@ export default function AcademicTranslationPage() {
                 <span>Văn bản gốc (Tiếng Việt / Tiếng Anh)</span>
               </span>
               <button
+                type="button"
                 onClick={() => setInputText("")}
                 className="text-[11px] text-[#64748B] hover:text-[#94A3B8] transition-colors"
               >
@@ -130,7 +170,7 @@ export default function AcademicTranslationPage() {
               onClick={handleTranslate}
               icon={<RotateCw className={`w-3.5 h-3.5 ${isTranslating ? "animate-spin" : ""}`} />}
             >
-              {isTranslating ? "Đang dịch học thuật..." : "Dịch 3 Cấp Độ Band"}
+              {isTranslating ? "AI đang dịch..." : "Dịch 3 Cấp Độ Band"}
             </Button>
           </div>
         </div>
@@ -141,9 +181,10 @@ export default function AcademicTranslationPage() {
             {/* Band Level Selector Tabs */}
             <div className="flex items-center justify-between pb-2.5 border-b border-[rgba(255,255,255,0.08)] mb-3">
               <div className="flex items-center gap-1 bg-[#0B0F17] p-0.5 rounded border border-[rgba(255,255,255,0.06)]">
-                {currentTiers.map((tier, idx) => (
+                {tiers.map((tier, idx) => (
                   <button
                     key={tier.band}
+                    type="button"
                     onClick={() => setSelectedBandIndex(idx)}
                     className={`px-2.5 py-1 rounded text-[11px] font-medium transition-all ${
                       selectedBandIndex === idx
@@ -158,11 +199,16 @@ export default function AcademicTranslationPage() {
 
               <div className="flex items-center gap-1">
                 <button
+                  type="button"
                   onClick={handleCopy}
                   className="p-1.5 rounded text-[#94A3B8] hover:text-white hover:bg-[#1C2636] transition-colors"
                   title="Sao chép bản dịch"
                 >
-                  {copied ? <Check className="w-3.5 h-3.5 text-[#22C55E]" /> : <Copy className="w-3.5 h-3.5 text-[#94A3B8]" />}
+                  {copied ? (
+                    <Check className="w-3.5 h-3.5 text-[#22C55E]" />
+                  ) : (
+                    <Copy className="w-3.5 h-3.5 text-[#94A3B8]" />
+                  )}
                 </button>
               </div>
             </div>
@@ -173,7 +219,17 @@ export default function AcademicTranslationPage() {
                 <span className="text-[10px] font-mono uppercase tracking-wider text-[#A5B4FC]">
                   {activeTier.band}
                 </span>
-                <button className="text-[11px] text-[#6366F1] flex items-center gap-1 hover:underline">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+                      const u = new SpeechSynthesisUtterance(activeTier.text);
+                      u.lang = "en-GB";
+                      window.speechSynthesis.speak(u);
+                    }
+                  }}
+                  className="text-[11px] text-[#6366F1] flex items-center gap-1 hover:underline"
+                >
                   <Volume2 className="w-3 h-3" /> Nghe phát âm
                 </button>
               </div>
@@ -205,17 +261,29 @@ export default function AcademicTranslationPage() {
             <span className="text-[11px] text-[#64748B]">Thực hành tiếp câu này:</span>
             <div className="flex items-center gap-2">
               <Link href="/shadowing">
-                <Button size="compact" variant="secondary" icon={<Headphones className="w-3.5 h-3.5 text-[#6366F1]" />}>
+                <Button
+                  size="compact"
+                  variant="secondary"
+                  icon={<Headphones className="w-3.5 h-3.5 text-[#6366F1]" />}
+                >
                   Shadowing Lab
                 </Button>
               </Link>
               <Link href="/paraphrase">
-                <Button size="compact" variant="secondary" icon={<Sparkles className="w-3.5 h-3.5 text-[#F59E0B]" />}>
+                <Button
+                  size="compact"
+                  variant="secondary"
+                  icon={<Sparkles className="w-3.5 h-3.5 text-[#F59E0B]" />}
+                >
                   Paraphrase
                 </Button>
               </Link>
               <Link href="/cards">
-                <Button size="compact" variant="secondary" icon={<BookMarked className="w-3.5 h-3.5 text-[#22C55E]" />}>
+                <Button
+                  size="compact"
+                  variant="secondary"
+                  icon={<BookMarked className="w-3.5 h-3.5 text-[#22C55E]" />}
+                >
                   Lưu vào Cards
                 </Button>
               </Link>

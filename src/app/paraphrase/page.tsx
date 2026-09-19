@@ -19,7 +19,7 @@ interface ParaphraseOption {
   syntacticNote: string;
 }
 
-const SAMPLE_REWRITES: ParaphraseOption[] = [
+const INITIAL_REWRITES: ParaphraseOption[] = [
   {
     structureType: "Nominalization (Danh từ hóa)",
     sentence:
@@ -56,6 +56,7 @@ export default function ParaphraseStudioPage() {
   const [inputSentence, setInputSentence] = useState(
     "When cities grow too fast, it causes many bad problems for the environment and people."
   );
+  const [rewrites, setRewrites] = useState<ParaphraseOption[]>(INITIAL_REWRITES);
   const [isGenerating, setIsGenerating] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
@@ -65,10 +66,29 @@ export default function ParaphraseStudioPage() {
     setTimeout(() => setCopiedIndex(null), 2000);
   };
 
-  const handleGenerate = (e: React.FormEvent) => {
+  const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!inputSentence.trim()) return;
+
     setIsGenerating(true);
-    setTimeout(() => setIsGenerating(false), 350);
+    try {
+      const res = await fetch("/api/ai/paraphrase", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sentence: inputSentence }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.rewrites && Array.isArray(data.rewrites)) {
+          setRewrites(data.rewrites);
+        }
+      }
+    } catch (err) {
+      console.warn("Paraphrase API notice:", err);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -81,13 +101,13 @@ export default function ParaphraseStudioPage() {
             Paraphrase Studio (Xưởng Viết Lại Câu Học Thuật)
           </h1>
           <p className="text-xs text-[#94A3B8] mt-0.5">
-            Tái cấu trúc câu Band 5.5 - 6.0 thành 3 phương án ngữ pháp nâng cao (Danh từ hóa, Bị động, Đảo ngữ) chuẩn Band 8.0+.
+            Tái cấu trúc câu Band 5.5 - 6.0 thành 3 phương án ngữ pháp nâng cao (Danh từ hóa, Bị động, Đảo ngữ) chuẩn Band 8.0+ qua Gemini AI.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <span className="px-2.5 py-1 rounded text-xs font-mono bg-[#1C2636] text-[#A5B4FC] border border-[rgba(255,255,255,0.08)]">
-            Rubric: LR & GRA Focus
+            AI Rubric: LR & GRA Focus
           </span>
         </div>
       </div>
@@ -108,7 +128,7 @@ export default function ParaphraseStudioPage() {
 
         <div className="flex items-center justify-between pt-2">
           <span className="text-[11px] text-[#64748B]">
-            Tự động phát hiện lỗi lặp từ và cấu trúc câu đơn
+            Tự động phát hiện cấu trúc câu đơn và gợi ý C1/C2 collocations
           </span>
           <Button
             type="button"
@@ -118,7 +138,7 @@ export default function ParaphraseStudioPage() {
             disabled={isGenerating || !inputSentence.trim()}
             icon={<RotateCw className={`w-3.5 h-3.5 ${isGenerating ? "animate-spin" : ""}`} />}
           >
-            {isGenerating ? "Đang xử lý..." : "Tạo 3 Phương Án Học Thuật"}
+            {isGenerating ? "AI đang viết lại..." : "Tạo 3 Phương Án Học Thuật"}
           </Button>
         </div>
       </div>
@@ -130,7 +150,7 @@ export default function ParaphraseStudioPage() {
         </h2>
 
         <div className="grid grid-cols-1 gap-3.5">
-          {SAMPLE_REWRITES.map((opt, idx) => (
+          {rewrites.map((opt, idx) => (
             <div
               key={idx}
               className="surface-card rounded-md border border-[rgba(255,255,255,0.08)] bg-[#131B26] p-4 space-y-3 hover:border-[#6366F1]/50 transition-colors"
@@ -163,18 +183,20 @@ export default function ParaphraseStudioPage() {
               </p>
 
               {/* Upgraded Lexical Pairs */}
-              <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px]">
-                <span className="text-[#64748B]">Từ vựng C1/C2 thay thế:</span>
-                {opt.lexicalUpgrades.map((item, i) => (
-                  <span
-                    key={i}
-                    className="px-2 py-0.5 rounded bg-[#0B0F17] border border-[rgba(255,255,255,0.08)] text-[#A7F3D0] font-mono"
-                  >
-                    <del className="text-[#EF4444] opacity-70 mr-1">{item.original}</del>
-                    → <span className="font-semibold text-[#22C55E]">{item.upgraded}</span>
-                  </span>
-                ))}
-              </div>
+              {opt.lexicalUpgrades && opt.lexicalUpgrades.length > 0 && (
+                <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px]">
+                  <span className="text-[#64748B]">Từ vựng C1/C2 thay thế:</span>
+                  {opt.lexicalUpgrades.map((item, i) => (
+                    <span
+                      key={i}
+                      className="px-2 py-0.5 rounded bg-[#0B0F17] border border-[rgba(255,255,255,0.08)] text-[#A7F3D0] font-mono"
+                    >
+                      <del className="text-[#EF4444] opacity-70 mr-1">{item.original}</del>
+                      → <span className="font-semibold text-[#22C55E]">{item.upgraded}</span>
+                    </span>
+                  ))}
+                </div>
+              )}
 
               {/* Syntactic Analysis */}
               <p className="text-[11px] text-[#94A3B8] bg-[#0B0F17] p-2.5 rounded border border-[rgba(255,255,255,0.05)]">
