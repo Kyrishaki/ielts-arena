@@ -1,0 +1,154 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum GameType {
+  WORD_DUEL
+  PARAPHRASE_BLITZ
+  ERROR_HUNTER
+  LISTENING_BOMB
+  TOPIC_DEBATE
+  GLOBAL_RANK
+}
+
+enum MatchMode {
+  PVP_1V1
+  COOP_TEAM
+}
+
+enum MatchStatus {
+  WAITING
+  IN_PROGRESS
+  FINISHED
+  CANCELLED
+}
+
+enum ParticipantResult {
+  WIN
+  LOSS
+  DRAW
+  COMPLETED
+}
+
+model User {
+  id                String             @id @default(uuid())
+  email             String             @unique
+  username          String             @unique
+  avatarUrl         String?            @map("avatar_url")
+  currentBandTarget Decimal            @default(7.0) @db.Decimal(2, 1) @map("current_band_target")
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+
+  eloRatings        EloRating[]
+  eloHistories      EloHistory[]
+  matchParticipants MatchParticipant[]
+  createdMatches    Match[]            @relation("MatchCreator")
+  submissions       GameRoundSubmission[]
+
+  @@map("users")
+}
+
+model EloRating {
+  id            String    @id @default(uuid())
+  userId        String    @map("user_id")
+  gameType      GameType  @map("game_type")
+  rating        Int       @default(1200)
+  peakRating    Int       @default(1200) @map("peak_rating")
+  matchesPlayed Int       @default(0) @map("matches_played")
+  wins          Int       @default(0)
+  losses        Int       @default(0)
+  draws         Int       @default(0)
+  winStreak     Int       @default(0) @map("win_streak")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, gameType])
+  @@index([gameType, rating(sort: Desc)])
+  @@map("elo_ratings")
+}
+
+model EloHistory {
+  id           String    @id @default(uuid())
+  userId       String    @map("user_id")
+  gameType     GameType  @map("game_type")
+  matchId      String    @map("match_id")
+  oldRating    Int       @map("old_rating")
+  newRating    Int       @map("new_rating")
+  ratingChange Int       @map("rating_change")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  match        Match     @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  @@index([userId, gameType, createdAt(sort: Desc)])
+  @@map("elo_histories")
+}
+
+model Match {
+  id               String        @id @default(uuid())
+  roomCode         String        @unique @map("room_code")
+  gameType         GameType      @map("game_type")
+  mode             MatchMode     @default(PVP_1V1)
+  status           MatchStatus   @default(WAITING)
+  stakeElo         Int           @default(25) @map("stake_elo")
+  timeLimitSeconds Int           @default(60) @map("time_limit_seconds")
+  createdById      String        @map("created_by_id")
+  winnerId         String?       @map("winner_id")
+  startedAt        DateTime?     @map("started_at")
+  finishedAt       DateTime?     @map("finished_at")
+  metadata         Json?         @db.JsonB
+  createdAt        DateTime      @default(now()) @map("created_at")
+
+  creator          User          @relation("MatchCreator", fields: [createdById], references: [id])
+  participants     MatchParticipant[]
+  eloHistories     EloHistory[]
+  submissions      GameRoundSubmission[]
+
+  @@index([status, gameType])
+  @@map("matches")
+}
+
+model MatchParticipant {
+  id          String             @id @default(uuid())
+  matchId     String             @map("match_id")
+  userId      String             @map("user_id")
+  slotNumber  Int                @default(1) @map("slot_number")
+  isReady     Boolean            @default(false) @map("is_ready")
+  finalScore  Decimal            @default(0.0) @db.Decimal(4, 1) @map("final_score")
+  eloChange   Int                @default(0) @map("elo_change")
+  result      ParticipantResult?
+  joinedAt    DateTime           @default(now()) @map("joined_at")
+
+  match       Match              @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([matchId, userId])
+  @@map("match_participants")
+}
+
+model GameRoundSubmission {
+  id           String    @id @default(uuid())
+  matchId      String    @map("match_id")
+  userId       String    @map("user_id")
+  roundNumber  Int       @default(1) @map("round_number")
+  payloadText  String?   @db.Text @map("payload_text")
+  payloadAudio String?   @map("payload_audio")
+  isCorrect    Boolean?  @map("is_correct")
+  score        Decimal   @default(0.0) @db.Decimal(4, 1)
+  latencyMs    Int       @default(0) @map("latency_ms")
+  aiFeedback   Json?     @db.JsonB
+  submittedAt  DateTime  @default(now()) @map("submitted_at")
+
+  match        Match     @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([matchId, roundNumber])
+  @@map("game_round_submissions")
+}
