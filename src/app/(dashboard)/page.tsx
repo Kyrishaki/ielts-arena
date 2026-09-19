@@ -81,11 +81,14 @@ export default function AcademicTranslationPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const [isFallback, setIsFallback] = useState(false);
+
   // Core translate function (reusable)
   const runTranslate = useCallback(async (text: string) => {
     if (!text.trim() || text.trim().length < 8) return;
     setIsTranslating(true);
     setIsWaiting(false);
+    setIsFallback(false);
     try {
       const res = await fetch("/api/ai/translate", {
         method: "POST",
@@ -96,6 +99,7 @@ export default function AcademicTranslationPage() {
       const data = await res.json();
       if (data.tiers && Array.isArray(data.tiers) && data.tiers.length === 3) {
         setTiers(data.tiers);
+        setIsFallback(!!data._fallback);
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Đã có lỗi xảy ra";
@@ -243,6 +247,14 @@ export default function AcademicTranslationPage() {
                 </button>
               </div>
             </div>
+
+            {/* Fallback Notice */}
+            {isFallback && (
+              <div className="flex items-center gap-2 p-2.5 mb-3 rounded bg-[#422006] border border-[#F59E0B]/30 text-xs text-[#FCD34D]">
+                <span>⚠️</span>
+                <span>AI tạm thời không phản hồi. Đây là bản dịch mẫu — không phải kết quả từ câu bạn nhập. Vui lòng thử lại.</span>
+              </div>
+            )}
 
             {/* Translation Output Display */}
             <div className="p-3.5 rounded bg-[#0B0F17] border border-[rgba(255,255,255,0.08)] mb-3">

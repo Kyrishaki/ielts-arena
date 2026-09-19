@@ -64,36 +64,38 @@ Respond strictly with valid JSON conforming to this schema (no markdown formatti
       console.warn("AI paraphrase generation fallback triggered:", aiErr);
     }
 
-    // High-quality deterministic fallback
+    // AI unavailable — return proper example instead of gibberish
     return NextResponse.json({
       rewrites: [
         {
           structureType: "Nominalization (Danh từ hóa)",
-          sentence: `The rapid escalation of ${sentence.toLowerCase().replace(/[.,!?;]$/, "")} has precipitated profound dilemmas across municipal environments.`,
+          sentence: "The rapid escalation of urban migration has precipitated profound deficits in municipal infrastructure and public service delivery.",
           lexicalUpgrades: [
-            { original: "causes problems", upgraded: "precipitated profound dilemmas" },
-            { original: "big changes", upgraded: "rapid escalation" },
+            { original: "cities grow fast", upgraded: "rapid escalation of urban migration" },
+            { original: "causes big problems", upgraded: "precipitated profound deficits" },
           ],
           syntacticNote: "Sử dụng cấu trúc danh từ hóa 'The rapid escalation of...' tạo tính trang trọng chuẩn mực.",
         },
         {
           structureType: "Passive Academic (Bị động Khách quan)",
-          sentence: `It is widely posited by contemporary scholars that ${sentence.toLowerCase().replace(/[.,!?;]$/, "")}, thereby fostering sustainable equilibrium.`,
+          sentence: "It is widely posited by contemporary urban scholars that unregulated metropolitan expansion is intrinsically correlated with the deterioration of communal well-being.",
           lexicalUpgrades: [
             { original: "people say", upgraded: "widely posited by contemporary scholars" },
-            { original: "good balance", upgraded: "sustainable equilibrium" },
+            { original: "health gets worse", upgraded: "deterioration of communal well-being" },
           ],
           syntacticNote: "Loại bỏ chủ ngữ cá nhân và sử dụng bị động khách quan 'It is widely posited that...'.",
         },
         {
           structureType: "Syntactic Inversion (Đảo ngữ C1/C2)",
-          sentence: `Under no circumstances should policymakers underestimate the extent to which ${sentence.toLowerCase().replace(/[.,!?;]$/, "")}.`,
+          sentence: "Under no circumstances should policymakers underestimate the extent to which unchecked urbanization has exacerbated socioeconomic stratification.",
           lexicalUpgrades: [
             { original: "governments should not ignore", upgraded: "under no circumstances should policymakers underestimate" },
           ],
           syntacticNote: "Đảo ngữ phủ định 'Under no circumstances should...' gây ấn tượng mạnh với giám khảo chấm Grammatical Range.",
         },
       ],
+      _fallback: true,
+      _notice: "AI tạm thời không phản hồi. Đây là bản mẫu. Vui lòng thử lại.",
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Internal error";

@@ -44,14 +44,14 @@ Respond strictly with valid JSON conforming to this schema (no markdown formatti
       console.warn("AI writing evaluation fallback triggered:", aiErr);
     }
 
-    // High-quality deterministic academic fallback
+    // AI unavailable — return generic example instead of inserting raw essay text
     return NextResponse.json({
       tr: 7.5,
       cc: 7.0,
       lr: 8.0,
       gra: 7.5,
       overallBand: 7.5,
-      reconstructedBand85: `It is widely contended that ${essay.toLowerCase().replace(/[.,!?;]$/, "")}, which constitutes a profound catalyst for sustainable structural advancement.`,
+      reconstructedBand85: "It is widely contended that the proliferation of digital technology constitutes a profound catalyst for sustainable structural advancement in contemporary educational paradigms, notwithstanding the concomitant challenges it poses to interpersonal connectivity.",
       strengths: [
         "Luận điểm rõ ràng, cấu trúc câu chặt chẽ",
         "Có nỗ lực sử dụng các từ vựng học thuật trong chủ đề",
@@ -60,6 +60,8 @@ Respond strictly with valid JSON conforming to this schema (no markdown formatti
         "Nên bổ sung thêm các cấu trúc đảo ngữ hoặc danh từ hóa phức hợp để nâng band GRA",
         "Tránh lặp lại các động từ chỉ quan điểm đơn giản",
       ],
+      _fallback: true,
+      _notice: "AI tạm thời không phản hồi. Đây là điểm mẫu. Vui lòng thử lại.",
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Internal error";

@@ -68,28 +68,30 @@ You MUST respond strictly with valid JSON conforming to this schema (no markdown
       console.warn("AI generation fallback triggered:", aiErr);
     }
 
-    // High-quality deterministic academic fallback guaranteeing 0 errors
+    // AI unavailable — return error message instead of gibberish fallback
     return NextResponse.json({
       tiers: [
         {
           band: "Band 6.5 (Tự nhiên)",
-          text: `It is commonly believed that ${text.toLowerCase().replace(/[.,!?;]$/, "")}, which leads to noticeable advantages for contemporary communities.`,
-          analysis: ["Cấu trúc câu phức với mệnh đề quan hệ 'which leads to'", "Từ vựng chuẩn mực IELTS Band 6.5"],
-          keyCollocations: ["commonly believed", "noticeable advantages", "contemporary communities"],
+          text: "The rapid development of technology brings significant benefits to modern society, though it also creates various environmental challenges.",
+          analysis: ["Cấu trúc câu phức với mệnh đề nhượng bộ 'though it also...'", "Từ vựng B2-C1 chuẩn IELTS"],
+          keyCollocations: ["rapid development", "significant benefits", "environmental challenges"],
         },
         {
           band: "Band 7.5 (Học thuật Chuyên sâu)",
-          text: `It is widely acknowledged that ${text.toLowerCase().replace(/[.,!?;]$/, "")}, thereby exerting a substantial influence on modern socio-economic structures.`,
-          analysis: ["Mệnh đề bị động khách quan 'It is widely acknowledged that'", "Cấu trúc rút gọn phân từ 'thereby exerting'"],
-          keyCollocations: ["widely acknowledged", "substantial influence", "socio-economic structures"],
+          text: "It is widely acknowledged that technological advancement has yielded substantial socioeconomic dividends, albeit at the cost of exacerbating ecological degradation.",
+          analysis: ["Mệnh đề bị động khách quan 'It is widely acknowledged that'", "Cấu trúc nhượng bộ 'albeit at the cost of'"],
+          keyCollocations: ["widely acknowledged", "socioeconomic dividends", "ecological degradation"],
         },
         {
           band: "Band 8.5+ (Tái tạo C1/C2 & Đảo ngữ)",
-          text: `Seldom can it be contested that ${text.toLowerCase().replace(/[.,!?;]$/, "")}, serving as a quintessential catalyst for profound institutional transformation.`,
+          text: "Seldom can it be contested that the exponential proliferation of technological innovation has served as a quintessential catalyst for profound institutional transformation, notwithstanding its deleterious environmental ramifications.",
           analysis: ["Cấu trúc đảo ngữ phủ định 'Seldom can it be contested'", "Cụm danh từ học thuật C2 'quintessential catalyst'"],
-          keyCollocations: ["seldom contested", "quintessential catalyst", "profound transformation"],
+          keyCollocations: ["seldom contested", "quintessential catalyst", "deleterious ramifications"],
         },
       ],
+      _fallback: true,
+      _notice: "AI tạm thời không phản hồi. Đây là bản dịch mẫu. Vui lòng thử lại.",
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Internal error";
