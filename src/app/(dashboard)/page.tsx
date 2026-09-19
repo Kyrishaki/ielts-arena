@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import {
   Languages,
@@ -67,10 +67,11 @@ export default function AcademicTranslationPage() {
     "Nhiều người tin rằng sự phát triển của công nghệ đem lại lợi ích to lớn cho xã hội hiện đại, nhưng nó cũng gây ra nhiều vấn đề môi trường."
   );
   const [tiers, setTiers] = useState<TranslationTier[]>(INITIAL_TIERS);
-  const [selectedBandIndex, setSelectedBandIndex] = useState(2); // Default to Band 8.5
+  const [selectedBandIndex, setSelectedBandIndex] = useState(2);
   const [copied, setCopied] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isWaiting, setIsWaiting] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const activeTier = tiers[selectedBandIndex] || tiers[0];
 
@@ -80,24 +81,18 @@ export default function AcademicTranslationPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleTranslate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputText.trim()) return;
-
+  // Core translate function (reusable)
+  const runTranslate = useCallback(async (text: string) => {
+    if (!text.trim() || text.trim().length < 8) return;
     setIsTranslating(true);
-    setErrorMessage(null);
-
+    setIsWaiting(false);
     try {
       const res = await fetch("/api/ai/translate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: inputText }),
+        body: JSON.stringify({ text }),
       });
-
-      if (!res.ok) {
-        throw new Error("Lỗi khi kết nối dịch thuật AI");
-      }
-
+      if (!res.ok) throw new Error("Lỗi kết nối AI");
       const data = await res.json();
       if (data.tiers && Array.isArray(data.tiers) && data.tiers.length === 3) {
         setTiers(data.tiers);
@@ -108,6 +103,30 @@ export default function AcademicTranslationPage() {
     } finally {
       setIsTranslating(false);
     }
+  }, []);
+
+  // Auto-translate: debounce 800ms after user stops typing
+  useEffect(() => {
+    if (!inputText.trim() || inputText.trim().length < 8) {
+      setIsWaiting(false);
+      return;
+    }
+    setIsWaiting(true);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      runTranslate(inputText);
+    }, 800);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [inputText, runTranslate]);
+
+  // Keep manual button for instant translate
+  const handleTranslate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    setIsWaiting(false);
+    runTranslate(inputText);
   };
 
   return (
@@ -159,18 +178,30 @@ export default function AcademicTranslationPage() {
           </div>
 
           <div className="flex items-center justify-between pt-3 border-t border-[rgba(255,255,255,0.08)]">
-            <span className="text-[11px] text-[#64748B] font-mono">
-              {inputText.length} ký tự
+            {/* Status indicator */}
+            <span className="text-[11px] font-mono flex items-center gap-1.5">
+              {isTranslating ? (
+                <span className="text-[#6366F1] flex items-center gap-1">
+                  <RotateCw className="w-3 h-3 animate-spin" />
+                  AI đang dịch...
+                </span>
+              ) : isWaiting ? (
+                <span className="text-[#64748B]">
+                  ● Đang chờ bạn nhập...
+                </span>
+              ) : (
+                <span className="text-[#64748B]">{inputText.length} ký tự</span>
+              )}
             </span>
             <Button
               type="button"
-              variant="primary"
+              variant="secondary"
               size="compact"
               disabled={isTranslating || !inputText.trim()}
               onClick={handleTranslate}
               icon={<RotateCw className={`w-3.5 h-3.5 ${isTranslating ? "animate-spin" : ""}`} />}
             >
-              {isTranslating ? "AI đang dịch..." : "Dịch 3 Cấp Độ Band"}
+              Dịch ngay
             </Button>
           </div>
         </div>
